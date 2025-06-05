@@ -1,0 +1,24 @@
+version: '3'
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    volumes: ["./share:/share"]
+    ports: ["8080:80"]
+
+  compute-1:
+    build:
+      context: .
+      dockerfile: Dockerfile.compute
+    volumes: ["./share:/share"]
+  compute-2:
+    build:
+      context: .
+      dockerfile: Dockerfile.compute
+    volumes: ["./share:/share"]
+  compute-3:
+    build:
+      context: .
+      dockerfile: Dockerfile.compute
+    volumes: ["./share:/share"]

@@ -1,0 +1,6 @@
+FROM php:8.2-cli
+RUN apt-get update && apt-get install -y python3 cron
+COPY coludsystem/ /opt/app/
+RUN echo '* * * * * php /opt/app/compute.php >> /var/log/compute.log 2>&1' \
+    > /etc/cron.d/compute && chmod 0644 /etc/cron.d/compute && crontab /etc/cron.d/compute
+CMD ["cron", "-f"]
