@@ -1,0 +1,111 @@
+version: "3.3" 
+
+services:
+  # --------------------------------------------
+  # worker1：只跑 claude，使用第一組新憑證
+  # --------------------------------------------
+  worker1:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile
+    container_name: worker1
+    hostname: worker1
+    volumes:
+      - shared_data:/share
+    environment:
+      - AI_USER=b1128008@cgu.edu.tw
+      - AI_PASS=81128Hippoyou
+      - AI_DEV_KEY=63dd0c42172e93e6cb5ede4b27caf4a5ac49bc1b3dd029d6ffed83a576875a1a
+      - MODEL_ID=claude
+    command: >
+      sh -c "
+        mkdir -p /share/_nodes/worker1 && \
+        while true; do
+          php /cloudsystem/compute_worker.php;
+          sleep 10;
+          python3 /cloudsystem/dump_metrics.py;
+          sleep 50;
+        done
+      "
+
+  # --------------------------------------------
+  # worker2：只跑 perplexity，使用第二組新憑證
+  # --------------------------------------------
+  worker2:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile
+    container_name: worker2
+    hostname: worker2
+    volumes:
+      - shared_data:/share
+    environment:
+      - AI_USER=b1128005@cgu.edu.tw
+      - AI_PASS=CGUcsieai
+      - AI_DEV_KEY=5355088908d9087659bfbbaf09442f7b9ffe1206e95a80b89c2592bf78716019
+      - MODEL_ID=perplexity
+    command: >
+      sh -c "
+        mkdir -p /share/_nodes/worker2 && \
+        while true; do
+          php /cloudsystem/compute_worker.php;
+          sleep 10;
+          python3 /cloudsystem/dump_metrics.py;
+          sleep 50;
+        done
+      "
+
+  # --------------------------------------------
+  # worker3：只跑 chatgpt-o1，使用「原本的那組」憑證
+  # 原本憑證：
+  #   AI_USER=b1144209@cgu.edu.tw
+  #   AI_PASS=mark142536
+  #   AI_DEV_KEY=5355088908d9087659bfbbaf09442f7b9ffe1206e95a80b89c2592bf78716019
+  # --------------------------------------------
+  worker3:
+    build:
+      context: ./worker
+      dockerfile: Dockerfile
+    container_name: worker3
+    hostname: worker3
+    volumes:
+      - shared_data:/share
+    environment:
+      - AI_USER=b1144209@cgu.edu.tw
+      - AI_PASS=mark142536
+      - AI_DEV_KEY=5355088908d9087659bfbbaf09442f7b9ffe1206e95a80b89c2592bf78716019
+      - MODEL_ID=chatgpt-o1
+    command: >
+      sh -c "
+        mkdir -p /share/_nodes/worker3 && \
+        while true; do
+          php /cloudsystem/compute_worker.php;
+          sleep 10;
+          python3 /cloudsystem/dump_metrics.py;
+          sleep 50;
+        done
+      "
+
+  # --------------------------------------------
+  # Web 前端：PHP + Apache
+  # --------------------------------------------
+  web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    container_name: web_frontend
+    ports:
+      - "8080:80"
+    volumes:
+      - shared_data:/share
+    environment:
+      - TZ=Asia/Taipei
+    depends_on:
+      - worker1
+      - worker2
+      - worker3
+
+volumes:
+  shared_data:
+    driver: local
+
